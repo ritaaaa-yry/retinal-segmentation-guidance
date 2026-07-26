@@ -1,0 +1,6 @@
+﻿model,params_m,gflops,checkpoint_mb,peak_vram_gb,latency_ms,fps,code_available,weights_available,hardware,input_size,evidence_tier,profiling_protocol
+DCP_1024,,,,,,,,,,,local benchmark metric evidence; deployment profiling incomplete,not reported locally
+FRUnet,,,,,,,,,,,local benchmark metric evidence; deployment profiling incomplete,not reported locally
+FSG-Net-HRF,,,,,,,,,,,local benchmark metric evidence; deployment profiling incomplete,not reported locally
+GAVE,,,,,,,,,,,local benchmark metric evidence; deployment profiling incomplete,not reported locally
+SA-UNnetv2,,,,,,,,,,,local benchmark metric evidence; deployment profiling incomplete,not reported locally

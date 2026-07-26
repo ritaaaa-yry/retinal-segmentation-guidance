@@ -1,0 +1,5 @@
+﻿model,dataset,image_id,threshold,threshold_source,f1,sensitivity,precision,iou,mcc,tvs,cldice,sf1,missed_burden,extra_burden,boundary_shift_burden,too_thin_burden,too_thick_burden,params_m,gflops,checkpoint_mb,peak_vram_gb,latency_ms,fps,code_available,weights_available,hardware,input_size,evidence_tier
+synthetic_A,synthetic_set_1,img_001,0.5,synthetic_placeholder,0.80,0.78,0.83,0.67,0.75,0.62,0.70,0.74,,,,,,,,,,,,,,,,"synthetic placeholder, not research data"
+synthetic_B,synthetic_set_1,img_001,0.5,synthetic_placeholder,0.78,0.88,0.70,0.64,0.71,0.74,0.63,0.66,,,,,,,,,,,,,,,,"synthetic placeholder, not research data"
+synthetic_A,synthetic_set_2,img_002,0.5,synthetic_placeholder,0.72,0.70,0.74,0.56,0.66,0.55,0.66,0.70,,,,,,,,,,,,,,,,"synthetic placeholder, not research data"
+synthetic_B,synthetic_set_2,img_002,0.5,synthetic_placeholder,0.76,0.86,0.68,0.61,0.69,0.71,0.60,0.65,,,,,,,,,,,,,,,,"synthetic placeholder, not research data"

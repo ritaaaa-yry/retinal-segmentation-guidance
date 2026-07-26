@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Retinal Vessel Segmentation Model Ranking Utility</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CSV-driven decision utility</p>
+        <h1>Retinal vessel segmentation model ranking</h1>
+        <p>
+          This page ranks models for the current task settings from uploaded or bundled CSV files. It is not a universal leaderboard,
+          and all calculations run locally in the browser.
+        </p>
+      </div>
+      <div class="formula-card">
+        <strong>Formula version</strong>
+        <span>F_beta + TVS + clDice/SF1 + mean-worst risk adjustment</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel data-panel">
+        <h2>Data</h2>
+        <div class="grid two">
+          <div>
+            <label>Results CSV</label>
+            <input id="results-file" type="file" accept=".csv" />
+          </div>
+          <div>
+            <label>Model metadata CSV</label>
+            <input id="metadata-file" type="file" accept=".csv" />
+          </div>
+        </div>
+        <div class="actions">
+          <button id="load-uploaded">Use uploaded CSV</button>
+          <button id="load-bundled" class="secondary">Load bundled current local CSV</button>
+          <a href="data/results_template.csv">results template</a>
+          <a href="data/model_metadata_template.csv">metadata template</a>
+          <a href="data/dataset_features_template.csv">dataset feature template</a>
+        </div>
+        <div id="validation" class="validation"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Hard Constraints</h2>
+        <div class="grid four">
+          <label class="check"><input id="require-code" type="checkbox" /> Require public code</label>
+          <label class="check"><input id="require-weights" type="checkbox" /> Require usable weights</label>
+          <label>Max parameters (M)<input id="max-params" type="number" min="0" step="0.1" /></label>
+          <label>Max latency (ms)<input id="max-latency" type="number" min="0" step="1" /></label>
+          <label>Max VRAM (GB)<input id="max-vram" type="number" min="0" step="0.1" /></label>
+          <label>Minimum FPS<input id="min-fps" type="number" min="0" step="0.1" /></label>
+          <label class="check"><input id="strict" type="checkbox" checked /> Strict missing-data mode</label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Task Priorities</h2>
+        <div class="grid four">
+          <label>FN-FP preference
+            <select id="fnfp">
+              <option>Balanced</option>
+              <option>Low FP</option>
+              <option>Low FN</option>
+              <option>Very low FN</option>
+            </select>
+          </label>
+          <label>Thin-vessel importance <b id="thin-value"></b>
+            <input id="thin" type="range" min="0" max="100" value="0" />
+          </label>
+          <label>Structural fidelity importance <b id="structure-value"></b>
+            <input id="structure" type="range" min="0" max="100" value="0" />
+          </label>
+          <label>Unknown-domain risk <b id="risk-value"></b>
+            <input id="risk" type="range" min="0" max="100" value="30" />
+          </label>
+          <label>Deployment preference <b id="deploy-value"></b>
+            <input id="deploy" type="range" min="0" max="100" value="0" />
+          </label>
+          <label>beta<input id="beta" type="number" min="0.1" step="0.1" value="1" /></label>
+          <label>eta<input id="eta" type="number" min="0" max="1" step="0.1" value="0.8" /></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Ranking Output</h2>
+        <p id="formula" class="formula"></p>
+        <div id="score-chart"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th><th>Model</th><th>FinalScore</th><th>Pixel</th><th>Thin</th><th>Structure</th><th>Deployment</th><th>Coverage</th><th>Feasibility</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Model Cards</h2>
+        <div id="cards" class="cards"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Stability</h2>
+        <p id="bootstrap-note"></p>
+        <div id="stability" class="stability"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Methodology</h2>
+        <p>Default aggregation uses equal dataset weighting. The final score is computed from active task utilities only when required evidence is available under the selected missing-data mode.</p>
+        <p>Deployment ranking is unavailable unless identical-hardware profiling fields are supplied and pass hard constraints.</p>
+      </section>
+    </main>
+
+    <script src="src/csv.js"></script>
+    <script src="src/validation.js"></script>
+    <script src="src/aggregation.js"></script>
+    <script src="src/scoring.js"></script>
+    <script src="src/bootstrap.js"></script>
+    <script src="src/charts.js"></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>

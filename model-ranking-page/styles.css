@@ -1,0 +1,120 @@
+:root {
+  color-scheme: light;
+  --ink: #17202a;
+  --muted: #586474;
+  --line: #d7dde5;
+  --panel: #ffffff;
+  --bg: #f4f7fb;
+  --accent: #256b8f;
+  --accent-2: #d97445;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  padding: 34px clamp(18px, 5vw, 64px);
+  background: #eef4f8;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+h1, h2, h3, p { margin-top: 0; }
+h1 { font-size: clamp(28px, 4vw, 46px); margin-bottom: 10px; }
+h2 { font-size: 20px; }
+
+main {
+  padding: 24px clamp(18px, 5vw, 64px) 56px;
+}
+
+.panel, .formula-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.formula-card span { display: block; margin-top: 8px; color: var(--muted); }
+.grid { display: grid; gap: 14px; }
+.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+label.check { display: flex; align-items: center; gap: 8px; color: var(--ink); }
+input, select, button {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 9px 10px;
+  font: inherit;
+  background: white;
+}
+button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+button.secondary { background: #34495e; border-color: #34495e; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 14px; }
+a { color: var(--accent); }
+.validation { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.error { color: #9f1239; }
+.warning { color: #9a5b00; }
+.formula { color: var(--muted); }
+
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th, td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #f7fafc; }
+
+.bars { display: grid; gap: 8px; margin-bottom: 16px; }
+.bar-row {
+  display: grid;
+  grid-template-columns: 180px minmax(160px, 1fr) 70px;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+.bar-track { height: 10px; background: #e6edf3; border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--accent-2); }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.model-card { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: #fbfdff; }
+.model-card p { color: var(--muted); font-size: 13px; }
+.stability { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.freq { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fbfdff; }
+.freq span, .freq strong { display: block; }
+.freq strong { margin-top: 6px; color: var(--accent); }
+
+@media (max-width: 900px) {
+  .topbar, .grid.two, .grid.four, .cards, .stability { grid-template-columns: 1fr; }
+  .bar-row { grid-template-columns: 1fr; }
+}

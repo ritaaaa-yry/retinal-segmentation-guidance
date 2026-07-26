@@ -1,0 +1,2 @@
+﻿model,dataset,image_id,threshold,threshold_source,f1,sensitivity,precision,iou,mcc,tvs,cldice,sf1,missed_burden,extra_burden,boundary_shift_burden,too_thin_burden,too_thick_burden,params_m,gflops,checkpoint_mb,peak_vram_gb,latency_ms,fps,code_available,weights_available,hardware,input_size,evidence_tier
+example_model,example_dataset,example_image,,,,,,,,,,,,,,,,,,,,,,,,,,
