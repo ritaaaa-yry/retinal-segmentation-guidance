@@ -1,0 +1,8 @@
+dataset,link,category,notes
+STARE,http://cecas.clemson.edu/~ahoover/stare/,test_dataset,Public retinal image dataset page.
+CHASE_DB1,https://blogs.kingston.ac.uk/retinal/chasedb1/,test_dataset,Public CHASE_DB1 dataset page.
+HRF,https://www5.cs.fau.de/research/data/fundus-images/,test_dataset,High-Resolution Fundus image dataset page.
+DualModal2019,https://ieee-dataport.org/documents/dualmodal2019-dataset,test_dataset,IEEE DataPort page; access may require IEEE DataPort terms.
+LES-AV,https://github.com/ignaciorlando/glaucoma-hemodynamics,test_dataset,LES-AV / glaucoma hemodynamics resource repository.
+AFIO,https://data.mendeley.com/datasets/3csr652p9y/1,test_dataset,Mendeley Data dataset page.
+

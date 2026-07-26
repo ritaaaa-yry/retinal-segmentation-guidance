@@ -1,0 +1,7 @@
+short_name,paper_title,paper_link,code_link,secondary_link,notes
+DCP / UNet_DCP_1024,Convolutional Prompting for Broad-Domain Retinal Vessel Segmentation,https://arxiv.org/abs/2412.18089,https://github.com/ruc-aimc-lab/dcp,https://huggingface.co/AIMClab-RUC/UNet_DCP_1024,Public code and model links found.
+FSG-Net,Full-scale Representation Guided Network for Retinal Vessel Segmentation,https://arxiv.org/abs/2501.18921,https://github.com/ZombaSY/FSG-Net-pytorch,,Public code link found.
+SA-UNetv2,SA-UNetv2: Rethinking Spatial Attention U-Net for Retinal Vessel Segmentation,https://arxiv.org/abs/2509.11774,https://github.com/clguo/SA-UNetv2,,Public code link found.
+FR-UNet,Full-Resolution Network and Dual-Threshold Iteration for Retinal Vessel and Coronary Angiograph Segmentation,https://doi.org/10.1109/JBHI.2022.3188710,https://github.com/lseventeen/FR-UNet,,Public code link found.
+RIP-AV,RIP-AV: Joint Representative Instance Pre-training with Context Aware Network for Retinal Artery/Vein Segmentation,https://papers.miccai.org/miccai-2024/660-Paper1711.html,https://github.com/weidai00/RIP-AV,,Public code link found.
+

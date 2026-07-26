@@ -1,0 +1,18 @@
+# Local caches
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+
+# Large data/model files should not be committed unless explicitly reviewed.
+datasets/
+models/
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
