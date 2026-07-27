@@ -1,10 +1,13 @@
 (function (global) {
+  "use strict";
+
   function parseCsv(text) {
+    const cleaned = String(text || "").replace(/^\uFEFF/, "");
     const rows = [];
     let row = [];
     let field = "";
     let quoted = false;
-    const cleaned = text.replace(/^\uFEFF/, "");
+
     for (let i = 0; i < cleaned.length; i += 1) {
       const ch = cleaned[i];
       const next = cleaned[i + 1];
@@ -35,27 +38,58 @@
       row.push(field);
       rows.push(row);
     }
-    const headers = (rows.shift() || []).map((h) => h.trim());
+
+    const headers = (rows.shift() || []).map((value) => value.trim());
     return rows
-      .filter((r) => r.some((v) => String(v).trim() !== ""))
-      .map((r) => Object.fromEntries(headers.map((h, i) => [h, r[i] ?? ""])));
+      .filter((values) => values.some((value) => String(value).trim() !== ""))
+      .map((values) => Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""])));
   }
 
   function toNumber(value) {
     if (value === null || value === undefined || String(value).trim() === "") return null;
-    const n = Number(value);
-    return Number.isFinite(n) ? n : NaN;
+    const result = Number(value);
+    return Number.isFinite(result) ? result : null;
   }
 
-  function readFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsText(file);
+  function typedEvidenceRow(row) {
+    const numeric = [
+      "threshold", "tp", "fp", "fn", "tn", "sensitivity", "precision", "f1", "iou", "mcc",
+      "tvs", "cldice", "sf1", "thin_gt_pixels", "thin_tp_pixels",
+      "prediction_skeleton_pixels", "gt_skeleton_pixels",
+    ];
+    const output = { ...row };
+    numeric.forEach((field) => { output[field] = toNumber(row[field]); });
+    return output;
+  }
+
+  function typedGenericRow(row) {
+    const output = { ...row };
+    Object.keys(output).forEach((field) => {
+      const text = String(output[field] ?? "").trim();
+      if (text !== "" && /^-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(text)) {
+        output[field] = Number(text);
+      }
     });
+    return output;
   }
 
-  global.RankingCsv = { parseCsv, readFile, toNumber };
-  if (typeof module !== "undefined") module.exports = global.RankingCsv;
+  async function fetchText(path) {
+    const response = await fetch(path, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Failed to load ${path}: HTTP ${response.status}`);
+    return response.text();
+  }
+
+  async function fetchCsv(path, mapper = typedGenericRow) {
+    return parseCsv(await fetchText(path)).map(mapper);
+  }
+
+  async function fetchJson(path) {
+    const response = await fetch(path, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Failed to load ${path}: HTTP ${response.status}`);
+    return response.json();
+  }
+
+  const api = { parseCsv, toNumber, typedEvidenceRow, typedGenericRow, fetchText, fetchCsv, fetchJson };
+  global.RankingCsv = api;
+  if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

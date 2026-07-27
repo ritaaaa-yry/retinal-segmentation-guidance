@@ -1,0 +1,6 @@
+﻿Task priority,First choice,Second choice,Primary evidence,Decision boundary,threshold_source
+Overall segmentation quality,FSG-Net-HRF,DCP_1024,"Highest six-dataset Mean F1, MCC, and IoU; DCP_1024 is the overlap runner-up.",Use SA-UNnetv2 when robustness or recall dominates mean overlap.,diagnostic_test_set_scan_equal_dataset_macro_F1
+Unknown-domain robustness,SA-UNnetv2,FSG-Net-HRF,Lowest cross-dataset F1 SD and highest worst-dataset F1 profile.,FSG-Net-HRF remains preferable when average overlap is the primary target.,diagnostic_test_set_scan_equal_dataset_macro_F1
+Low FN / thin-vessel retention,SA-UNnetv2,FSG-Net-HRF,Strong recall-oriented profile and highest TVS after EDT/DOD thin-vessel measurement.,Inspect FP burden when false positives are clinically costly.,diagnostic_test_set_scan_equal_dataset_macro_F1
+Low FP,DCP_1024,FSG-Net-HRF,Highest mean Precision; FSG-Net-HRF provides a more balanced alternative.,DCP_1024 has lower Sensitivity and stronger dataset dependence.,diagnostic_test_set_scan_equal_dataset_macro_F1
+Centerline / structural fidelity,FSG-Net-HRF,SA-UNnetv2,Highest clDice and Skeleton F1 using skeletonize-based clDice/SF1 measurement.,"Inspect local breaks, false connections, and error composition before deployment.",diagnostic_test_set_scan_equal_dataset_macro_F1

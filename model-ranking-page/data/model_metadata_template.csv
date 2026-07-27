@@ -1,2 +1,0 @@
-﻿model,params_m,gflops,checkpoint_mb,peak_vram_gb,latency_ms,fps,code_available,weights_available,hardware,input_size,evidence_tier,profiling_protocol
-,,,,,,,,,,,,
