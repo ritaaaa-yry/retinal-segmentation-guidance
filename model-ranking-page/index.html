@@ -54,7 +54,8 @@
         <button type="button" data-preset="lowfn">Low FN / thin vessels</button>
         <button type="button" data-preset="lowfp">Low FP</button>
         <button type="button" data-preset="structure">Structural fidelity</button>
-        <button type="button" data-preset="unknown">Unknown-domain balanced</button>
+        <button type="button" data-preset="unknown">Unknown-domain robustness</button>
+        <button type="button" data-preset="resource">Low GPU / compute cost</button>
       </div>
     </section>
 
@@ -65,37 +66,16 @@
           <h2>Adjust the decision rule</h2>
         </div>
       </div>
-      <div class="control-grid">
-        <label>
-          <span>FN–FP preference</span>
-          <select id="fnfp-preference">
-            <option>Low FP</option>
-            <option selected>Balanced</option>
-            <option>Low FN</option>
-            <option>Very low FN</option>
-          </select>
-          <small>Controls β in F<sub>β</sub>.</small>
-        </label>
-        <label>
-          <span>Pixel performance <b id="pixel-value">60%</b></span>
-          <input id="pixel-weight" type="range" min="0" max="100" value="60">
-          <small>Precision–sensitivity utility.</small>
-        </label>
-        <label>
-          <span>Thin-vessel retention <b id="thin-value">15%</b></span>
-          <input id="thin-weight" type="range" min="0" max="100" value="15">
-          <small>TVS only; avoids re-counting overall recall.</small>
-        </label>
-        <label>
-          <span>Structural fidelity <b id="structure-value">25%</b></span>
-          <input id="structure-weight" type="range" min="0" max="100" value="25">
-          <small>clDice primary, tolerant SF1 supportive.</small>
-        </label>
-        <label>
-          <span>Unknown-domain risk <b id="risk-value">30%</b></span>
-          <input id="risk-weight" type="range" min="0" max="100" value="30">
-          <small>0% = mean only; 100% = worst dataset only.</small>
-        </label>
+      <p class="weight-rule"><strong>Task weights always sum to 100%.</strong> Moving one slider automatically rescales the other three. Cross-dataset robustness is selected separately and is not a fifth percentage.</p>
+      <div class="control-grid four-weights">
+        <label><span>Pixel performance <b id="pixel-value">50%</b></span><input id="pixel-weight" type="range" min="0" max="100" value="50"><small>Fβ from Precision and Sensitivity.</small></label>
+        <label><span>Thin-vessel retention <b id="thin-value">15%</b></span><input id="thin-weight" type="range" min="0" max="100" value="15"><small>TVS only.</small></label>
+        <label><span>Structural fidelity <b id="structure-value">20%</b></span><input id="structure-weight" type="range" min="0" max="100" value="20"><small>clDice primary; SF1 supportive.</small></label>
+        <label><span>GPU / compute efficiency <b id="resource-value">15%</b></span><input id="resource-weight" type="range" min="0" max="100" value="15"><small>Training-resource evidence; incomplete profiles use a neutral value and are labelled.</small></label>
+      </div>
+      <div class="control-grid decision-controls">
+        <label><span>FN–FP preference</span><select id="fnfp-preference"><option>Low FP</option><option selected>Balanced</option><option>Low FN</option><option>Very low FN</option></select><small>Controls β in Fβ.</small></label>
+        <label><span>Cross-dataset aggregation</span><select id="aggregation-mode"><option value="mean">Mean only</option><option value="balanced" selected>Balanced: 70% mean + 30% worst</option><option value="robust">Robust: 30% mean + 70% worst</option></select><small>This controls unknown-domain caution; it is not part of the 100% task weights.</small></label>
       </div>
       <p id="normalized-weights" class="normalized-note"></p>
       <details class="advanced">
@@ -145,6 +125,7 @@
           <h2>Model profiles and residual risks</h2>
         </div>
       </div>
+      <div class="section-formula"><strong>Profile formulas:</strong> Mean metric = average of six dataset-level means; Worst metric = minimum dataset-level mean; Error share = category error pixels / all structural-error pixels.</div>
       <div id="model-cards" class="model-cards"></div>
     </section>
 
@@ -155,7 +136,8 @@
           <h2>Top-candidate breakdown across six datasets</h2>
         </div>
       </div>
-      <p class="muted">The displayed dataset utility uses the active pixel/thin/structure weights before the mean–worst risk adjustment. This reveals where the two leading candidates exchange advantages.</p>
+      <p class="muted">The displayed dataset utility uses the active pixel/thin/structure weights before cross-dataset aggregation. The model-level resource score is excluded here because it does not vary by dataset.</p>
+      <div class="section-formula"><strong>Dataset utility:</strong> 100 × (w_pixel·Fβ + w_thin·TVS + w_structure·[η·clDice+(1−η)·SF1]).</div>
       <div class="table-wrap">
         <table>
           <thead id="dataset-head"></thead>
@@ -172,6 +154,7 @@
         </div>
         <button id="rerun-stability" class="secondary-button" type="button">Re-run stability</button>
       </div>
+      <div class="section-formula"><strong>Bootstrap:</strong> Top-1 frequency = number of bootstrap runs ranked first / 400. The 95% score interval is the 2.5th–97.5th percentile of bootstrap scores.</div>
       <p id="stability-status" class="muted"></p>
       <div class="stability-grid">
         <div id="bootstrap-chart" class="stability-card"></div>
@@ -186,6 +169,14 @@
         </table>
       </div>
       <p class="small muted">Paired bootstrap resamples image identities within each dataset and applies the same draws to every model. Weight-sensitivity frequency varies active preference weights by ±20%; it is not a statistical probability of model superiority.</p>
+    </section>
+
+
+    <section class="panel">
+      <div class="section-heading"><div><p class="section-kicker">Compute evidence</p><h2>GPU and training-resource profile</h2></div></div>
+      <div class="notice warning"><strong>Provisional resource score</strong><span>These are training-resource measurements from different input sizes and frameworks, not identical-hardware inference benchmarks. Missing fields receive neutral utility 0.50; therefore this dimension must not be presented as a deployment winner.</span></div>
+      <div class="section-formula"><strong>Resource metric utility:</strong> u_j(m)=min observed cost_j / cost_j(m), capped at 1. Resource(m)=mean of parameter, GFLOPs, checkpoint, peak allocated VRAM, and total training-time utilities. Missing metric utility=0.50.</div>
+      <div class="table-wrap"><table><thead><tr><th>Model</th><th>Parameters (M)</th><th>GFLOPs</th><th>Peak VRAM (GB)</th><th>Training time (min)</th><th>Resource score</th><th>Evidence</th></tr></thead><tbody id="resource-body"></tbody></table></div>
     </section>
 
     <section class="panel">

@@ -78,7 +78,7 @@
     const rng = mulberry32(seed);
     const models = [...new Set(records.map((record) => record.model))].sort();
     const top1 = Object.fromEntries(models.map((model) => [model, 0]));
-    const base = scoring.normalizeWeights(options.weights || { pixel: 1, thin: 0, structure: 0 });
+    const base = scoring.normalizeWeights(options.weights || { pixel: 1, thin: 0, structure: 0, resource: 0 });
 
     for (let iteration = 0; iteration < repetitions; iteration += 1) {
       const jitter = (value) => value <= 0 ? 0 : value * (0.8 + 0.4 * rng());
@@ -88,6 +88,7 @@
           pixel: jitter(base.pixel),
           thin: jitter(base.thin),
           structure: jitter(base.structure),
+          resource: jitter(base.resource),
         },
       };
       const trial = scoring.scoreModels(records, trialOptions).rows.find((row) => Number.isFinite(row.finalScore));
