@@ -1,112 +1,261 @@
 (function (global) {
-  const { toNumber } = global.RankingCsv || require("./csv.js");
-  const { equalDatasetSummary } = global.RankingAggregation || require("./aggregation.js");
+  "use strict";
 
-  function betaFromPreference(pref) {
-    return { "Low FP": 0.5, Balanced: 1, "Low FN": 2, "Very low FN": 3 }[pref] || 1;
+  const EPSILON = 1e-12;
+
+  function finite(value) {
+    return Number.isFinite(value);
+  }
+
+  function mean(values) {
+    const usable = values.filter(finite);
+    return usable.length ? usable.reduce((sum, value) => sum + value, 0) / usable.length : null;
+  }
+
+  function sampleSd(values) {
+    const usable = values.filter(finite);
+    if (usable.length < 2) return usable.length ? 0 : null;
+    const avg = mean(usable);
+    return Math.sqrt(usable.reduce((sum, value) => sum + (value - avg) ** 2, 0) / (usable.length - 1));
+  }
+
+  function betaFromPreference(preference) {
+    return {
+      "Low FP": 0.5,
+      Balanced: 1,
+      "Low FN": 2,
+      "Very low FN": 3,
+    }[preference] || 1;
   }
 
   function fBeta(precision, sensitivity, beta) {
-    if (!Number.isFinite(precision) || !Number.isFinite(sensitivity)) return null;
-    const b2 = beta * beta;
-    const denom = b2 * precision + sensitivity;
-    return denom ? ((1 + b2) * precision * sensitivity) / denom : 0;
+    if (!finite(precision) || !finite(sensitivity) || !finite(beta) || beta <= 0) return null;
+    const betaSquared = beta * beta;
+    const denominator = betaSquared * precision + sensitivity;
+    if (Math.abs(denominator) <= EPSILON) return 0;
+    return ((1 + betaSquared) * precision * sensitivity) / denominator;
   }
 
-  function structureScore(row, eta) {
-    const cldice = toNumber(row.cldice);
-    const sf1 = toNumber(row.sf1);
-    if (!Number.isFinite(cldice) || !Number.isFinite(sf1)) return null;
+  function structureUtility(cldice, sf1, eta) {
+    if (!finite(cldice) || !finite(sf1) || !finite(eta)) return null;
     return eta * cldice + (1 - eta) * sf1;
   }
 
-  function metadataByModel(metadataRows) {
-    const out = new Map();
-    (metadataRows || []).forEach((r) => out.set(r.model, r));
-    return out;
+  function groupBy(records, keyFn) {
+    const result = new Map();
+    records.forEach((record) => {
+      const key = keyFn(record);
+      if (!result.has(key)) result.set(key, []);
+      result.get(key).push(record);
+    });
+    return result;
   }
 
-  function feasible(model, meta, constraints) {
-    const reasons = [];
-    const insufficient = [];
-    if (constraints.requireCode && String(meta.code_available || "").toLowerCase() !== "true") insufficient.push("code availability not confirmed");
-    if (constraints.requireWeights && String(meta.weights_available || "").toLowerCase() !== "true") insufficient.push("weights availability not confirmed");
-    for (const [field, limit, direction] of [
-      ["params_m", constraints.maxParams, "max"],
-      ["latency_ms", constraints.maxLatency, "max"],
-      ["peak_vram_gb", constraints.maxVram, "max"],
-      ["fps", constraints.minFps, "min"],
-    ]) {
-      if (limit === null || limit === undefined || limit === "") continue;
-      const value = toNumber(meta[field]);
-      if (!Number.isFinite(value)) insufficient.push(`${field} missing`);
-      else if (direction === "max" && value > Number(limit)) reasons.push(`${field} exceeds limit`);
-      else if (direction === "min" && value < Number(limit)) reasons.push(`${field} below limit`);
-    }
-    if (reasons.length) return { status: "Not feasible", reasons };
-    if (insufficient.length) return { status: "Insufficient evidence", reasons: insufficient };
-    return { status: "Feasible", reasons: [] };
+  function aggregateDatasetUtilities(records, beta, eta) {
+    const grouped = groupBy(records, (row) => `${row.model}||${row.dataset}`);
+    const output = [];
+    grouped.forEach((rows) => {
+      const first = rows[0];
+      const values = {
+        pixel: rows.map((row) => fBeta(row.precision, row.sensitivity, beta)),
+        thin: rows.map((row) => row.tvs),
+        structure: rows.map((row) => structureUtility(row.cldice, row.sf1, eta)),
+        f1: rows.map((row) => row.f1),
+        sensitivity: rows.map((row) => row.sensitivity),
+        precision: rows.map((row) => row.precision),
+        iou: rows.map((row) => row.iou),
+        mcc: rows.map((row) => row.mcc),
+        tvs: rows.map((row) => row.tvs),
+        cldice: rows.map((row) => row.cldice),
+        sf1: rows.map((row) => row.sf1),
+      };
+      const summary = { model: first.model, dataset: first.dataset, n: rows.length };
+      Object.entries(values).forEach(([metric, metricValues]) => {
+        summary[metric] = mean(metricValues);
+        summary[`${metric}Sd`] = sampleSd(metricValues);
+        const usable = metricValues.filter(finite);
+        summary[`${metric}Min`] = usable.length ? Math.min(...usable) : null;
+        summary[`${metric}Max`] = usable.length ? Math.max(...usable) : null;
+      });
+      output.push(summary);
+    });
+    return output.sort((a, b) => a.model.localeCompare(b.model) || a.dataset.localeCompare(b.dataset));
   }
 
-  function scoreModels(rows, metadataRows, options) {
-    const beta = options.beta ?? betaFromPreference(options.fnfpPreference);
-    const eta = options.eta ?? 0.8;
-    const risk = options.risk ?? 0.3;
-    const weights = {
-      pixel: Number(options.pixelWeight ?? 1),
-      thin: Number(options.thinWeight ?? 0),
-      structure: Number(options.structureWeight ?? 0),
-      deployment: Number(options.deploymentWeight ?? 0),
+  function riskAdjust(values, risk) {
+    const usable = values.filter(finite);
+    if (!usable.length) return { adjusted: null, mean: null, worst: null, sd: null };
+    const avg = mean(usable);
+    const worst = Math.min(...usable);
+    return {
+      adjusted: (1 - risk) * avg + risk * worst,
+      mean: avg,
+      worst,
+      sd: sampleSd(usable),
     };
-    const metaMap = metadataByModel(metadataRows);
-    const pixel = equalDatasetSummary(rows, (row) => fBeta(toNumber(row.precision), toNumber(row.sensitivity), beta), risk);
-    const thin = equalDatasetSummary(rows, (row) => toNumber(row.tvs), risk);
-    const structure = equalDatasetSummary(rows, (row) => structureScore(row, eta), risk);
-    const byModel = new Map(rows.map((r) => [r.model, { model: r.model }]));
-    const lookup = (arr) => Object.fromEntries(arr.map((r) => [r.model, r]));
-    const pix = lookup(pixel);
-    const th = lookup(thin);
-    const st = lookup(structure);
+  }
 
-    const scored = [...byModel.keys()].map((model) => {
-      const meta = metaMap.get(model) || {};
-      const feas = feasible(model, meta, options.constraints || {});
-      const active = [];
-      if (weights.pixel > 0) active.push(["pixel", weights.pixel, pix[model]?.adjusted]);
-      if (weights.thin > 0) active.push(["thin", weights.thin, th[model]?.adjusted]);
-      if (weights.structure > 0) active.push(["structure", weights.structure, st[model]?.adjusted]);
-      if (weights.deployment > 0) active.push(["deployment", weights.deployment, null]);
-      const availableWeight = active.filter(([, , v]) => Number.isFinite(v)).reduce((a, [, w]) => a + w, 0);
-      const totalWeight = active.reduce((a, [, w]) => a + w, 0);
-      const coverage = totalWeight ? availableWeight / totalWeight : 0;
-      const strictMissing = options.strictMode !== false && coverage < 1;
-      const numerator = active.reduce((a, [, w, v]) => a + (Number.isFinite(v) ? w * v : 0), 0);
-      const denominator = options.strictMode === false ? availableWeight : totalWeight;
-      const score = denominator && !strictMissing && feas.status === "Feasible" ? (100 * numerator) / denominator : null;
+  function normalizeWeights(weights) {
+    const cleaned = {
+      pixel: Math.max(0, Number(weights.pixel) || 0),
+      thin: Math.max(0, Number(weights.thin) || 0),
+      structure: Math.max(0, Number(weights.structure) || 0),
+    };
+    const total = cleaned.pixel + cleaned.thin + cleaned.structure;
+    if (total <= 0) return { pixel: 1, thin: 0, structure: 0, total: 1 };
+    return {
+      pixel: cleaned.pixel / total,
+      thin: cleaned.thin / total,
+      structure: cleaned.structure / total,
+      total,
+    };
+  }
+
+  function scoreDatasetUtilities(datasetUtilities, options) {
+    const risk = Math.min(1, Math.max(0, Number(options.risk) || 0));
+    const strictMode = options.strictMode !== false;
+    const weights = normalizeWeights(options.weights || { pixel: 1, thin: 0, structure: 0 });
+    const models = [...new Set(datasetUtilities.map((row) => row.model))].sort();
+    const allDatasets = [...new Set(datasetUtilities.map((row) => row.dataset))].sort();
+    const byModel = groupBy(datasetUtilities, (row) => row.model);
+
+    const rows = models.map((model) => {
+      const modelRows = byModel.get(model) || [];
+      const byDataset = Object.fromEntries(modelRows.map((row) => [row.dataset, row]));
+      const active = [
+        ["pixel", weights.pixel],
+        ["thin", weights.thin],
+        ["structure", weights.structure],
+      ].filter(([, weight]) => weight > 0);
+
+      const dimensions = {};
+      const missing = [];
+      active.forEach(([dimension]) => {
+        const values = allDatasets.map((dataset) => byDataset[dataset]?.[dimension]);
+        const coverage = values.filter(finite).length / allDatasets.length;
+        dimensions[dimension] = { ...riskAdjust(values, risk), coverage };
+        if (coverage < 1) missing.push(`${dimension} (${Math.round(coverage * 100)}% datasets)`);
+      });
+
+      const requestedWeight = active.reduce((sum, [, weight]) => sum + weight, 0);
+      const availableWeight = active.reduce((sum, [dimension, weight]) => {
+        return sum + (finite(dimensions[dimension]?.adjusted) ? weight : 0);
+      }, 0);
+      const coverage = requestedWeight ? availableWeight / requestedWeight : 0;
+      const strictFailure = strictMode && (coverage < 1 || missing.length > 0);
+      const denominator = strictMode ? requestedWeight : availableWeight;
+      const numerator = active.reduce((sum, [dimension, weight]) => {
+        const value = dimensions[dimension]?.adjusted;
+        return sum + (finite(value) ? weight * value : 0);
+      }, 0);
+      const finalScore = !strictFailure && denominator > 0 ? (100 * numerator) / denominator : null;
+
+      const summary = {};
+      ["f1", "sensitivity", "precision", "iou", "mcc", "tvs", "cldice", "sf1"].forEach((metric) => {
+        const values = allDatasets.map((dataset) => byDataset[dataset]?.[metric]);
+        const adjusted = riskAdjust(values, risk);
+        summary[metric] = adjusted.mean;
+        summary[`${metric}Worst`] = adjusted.worst;
+        summary[`${metric}Sd`] = adjusted.sd;
+        if (finite(adjusted.worst)) {
+          const worstRow = modelRows.reduce((current, candidate) => {
+            if (!finite(candidate[metric])) return current;
+            if (!current || candidate[metric] < current[metric]) return candidate;
+            return current;
+          }, null);
+          summary[`${metric}WorstDataset`] = worstRow?.dataset || "";
+        }
+      });
+
       return {
         model,
-        finalScore: score,
-        pixel: pix[model]?.adjusted ?? null,
-        thin: th[model]?.adjusted ?? null,
-        structure: st[model]?.adjusted ?? null,
-        deployment: null,
+        finalScore,
         coverage,
-        feasibility: feas.status,
-        reasons: feas.reasons,
-        meanPixel: pix[model]?.mean ?? null,
-        worstPixel: pix[model]?.worst ?? null,
-        missing: active.filter(([, , v]) => !Number.isFinite(v)).map(([name]) => name),
+        missing,
+        dimensions,
+        summary,
+        datasetRows: modelRows,
+        status: strictFailure ? "Insufficient evidence" : (coverage < 1 ? "Provisional" : "Complete"),
       };
     });
-    scored.sort((a, b) => {
-      if (a.finalScore === null && b.finalScore === null) return a.model.localeCompare(b.model);
-      if (a.finalScore === null) return 1;
-      if (b.finalScore === null) return -1;
-      return b.finalScore - a.finalScore;
+
+    rows.sort((a, b) => {
+      if (!finite(a.finalScore) && !finite(b.finalScore)) return a.model.localeCompare(b.model);
+      if (!finite(a.finalScore)) return 1;
+      if (!finite(b.finalScore)) return -1;
+      if (Math.abs(b.finalScore - a.finalScore) > EPSILON) return b.finalScore - a.finalScore;
+      return a.model.localeCompare(b.model);
     });
-    return { beta, eta, risk, weights, rows: scored };
+
+    return { rows, risk, weights, datasets: allDatasets };
   }
 
-  global.RankingScoring = { betaFromPreference, fBeta, structureScore, scoreModels };
-  if (typeof module !== "undefined") module.exports = global.RankingScoring;
+  function metricLeaders(datasetUtilities) {
+    const models = [...new Set(datasetUtilities.map((row) => row.model))];
+    const byModel = groupBy(datasetUtilities, (row) => row.model);
+    const metrics = ["f1", "iou", "mcc"];
+    const leaders = {};
+    metrics.forEach((metric) => {
+      const values = models.map((model) => ({
+        model,
+        value: mean((byModel.get(model) || []).map((row) => row[metric])),
+      })).filter((item) => finite(item.value));
+      values.sort((a, b) => b.value - a.value || a.model.localeCompare(b.model));
+      leaders[metric] = values[0] || null;
+    });
+    return leaders;
+  }
+
+  function scoreModels(records, options = {}) {
+    const beta = Number(options.beta) > 0 ? Number(options.beta) : betaFromPreference(options.preference);
+    const eta = Math.min(1, Math.max(0, Number(options.eta ?? 0.8)));
+    const datasetUtilities = aggregateDatasetUtilities(records, beta, eta);
+    const scored = scoreDatasetUtilities(datasetUtilities, options);
+    const leaders = metricLeaders(datasetUtilities);
+    const leaderNames = new Set(Object.values(leaders).filter(Boolean).map((entry) => entry.model));
+    return {
+      ...scored,
+      beta,
+      eta,
+      datasetUtilities,
+      metricLeaders: leaders,
+      metricConsistency: leaderNames.size <= 1,
+    };
+  }
+
+  function recommendShortlist(scoredRows, bootstrapRows, risk) {
+    const ranked = scoredRows.filter((row) => finite(row.finalScore));
+    if (!ranked.length) return { type: "none", models: [], reason: "No complete score is available." };
+    if (ranked.length === 1) return { type: "single", models: [ranked[0].model], reason: "Only one model has a complete score." };
+    const gap = ranked[0].finalScore - ranked[1].finalScore;
+    const bootstrapMap = Object.fromEntries((bootstrapRows || []).map((row) => [row.model, row]));
+    const topFrequency = bootstrapMap[ranked[0].model]?.top1Frequency;
+    const unstable = finite(topFrequency) && topFrequency < 0.6;
+    if (gap < 1 || unstable || risk >= 0.65) {
+      const reasons = [];
+      if (gap < 1) reasons.push(`top-score gap is only ${gap.toFixed(2)} points`);
+      if (unstable) reasons.push(`bootstrap top-1 frequency is ${(100 * topFrequency).toFixed(1)}%`);
+      if (risk >= 0.65) reasons.push("the target-domain risk setting is high");
+      return { type: "shortlist", models: [ranked[0].model, ranked[1].model], reason: reasons.join("; ") };
+    }
+    return { type: "single", models: [ranked[0].model], reason: `top-score gap is ${gap.toFixed(2)} points` };
+  }
+
+  const api = {
+    mean,
+    sampleSd,
+    betaFromPreference,
+    fBeta,
+    structureUtility,
+    aggregateDatasetUtilities,
+    riskAdjust,
+    normalizeWeights,
+    scoreDatasetUtilities,
+    metricLeaders,
+    scoreModels,
+    recommendShortlist,
+  };
+
+  global.RankingScoring = api;
+  if (typeof module !== "undefined") module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);
