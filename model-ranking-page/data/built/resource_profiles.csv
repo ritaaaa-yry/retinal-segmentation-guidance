@@ -1,0 +1,6 @@
+model,parameters_m,gflops,checkpoint_mb,peak_allocated_vram_gb,total_training_time_s,median_epoch_time_s,profile_status,notes
+FSG-Net,16.851587,199.610381,64.450687,7.9353,6985.305040,34.9112,measured,"Local FIVES training; FP32; input 288; batch 4"
+FR-UNet,7.375568,430.767604,28.322763,7.0750,3129.648050,44.5694,measured,"Local FIVES training; AMP; input 512; batch 4"
+SA-UNetv2,0.260000,,,,1806.680083,,partial,"Training time measured at input 1028 and batch 2; parameter count from manuscript; VRAM/FLOPs/checkpoint size unavailable"
+DCP_1024,12.500000,,,,,,partial,"Published parameter count only; identical local GPU profiling unavailable"
+GAVE,,,,,,,unprofiled,"Patch-based pipeline; no comparable local resource profile"

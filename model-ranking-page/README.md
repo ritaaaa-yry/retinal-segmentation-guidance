@@ -196,3 +196,10 @@ node tests/scoring.test.js
 ## Important interpretation limit
 
 This page is a decision aid based on six benchmark datasets. It does not prove that the first-ranked model will remain first on an unseen target domain. Labelled target-domain validation should override the benchmark-relative ranking.
+
+
+## Revised weighting and resource evidence
+
+The four task weights (Pixel, Thin vessel, Structure, GPU/compute resource) always sum to 100%. Cross-dataset aggregation is a separate setting: mean-only, balanced (70% mean + 30% worst), or robust (30% mean + 70% worst).
+
+The resource score is provisional training-cost evidence, not a deployment benchmark. It combines parameters, GFLOPs, checkpoint size, peak allocated VRAM, and total training time using `min observed cost / model cost`; missing fields receive neutral utility 0.50. Because input sizes and frameworks differ, the page explicitly warns against interpreting this as identical-hardware inference efficiency.
