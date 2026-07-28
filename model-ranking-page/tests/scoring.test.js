@@ -28,7 +28,7 @@ function rank(records, overrides = {}) {
     beta: 1,
     eta: 0.8,
     risk: 0,
-    weights: { pixel: 1, thin: 0, structure: 0 },
+    weights: { pixel: 1, thin: 0, structure: 0, resource: 0 },
     strictMode: true,
     ...overrides,
   }).rows;
@@ -90,7 +90,8 @@ const real = scoring.scoreModels(evidence, {
   beta: 1,
   eta: 0.8,
   risk: 0.3,
-  weights: { pixel: 60, thin: 15, structure: 25 },
+  weights: { pixel: 50, thin: 15, structure: 20, resource: 15 },
+  resourceScores: Object.fromEntries(["DCP_1024","FR-UNet","FSG-Net","GAVE","SA-UNetv2"].map((m)=>[m,{score:0.5,completeness:0,status:"test"}])),
   strictMode: true,
 });
 assert.strictEqual(real.rows.length, 5);
@@ -105,10 +106,21 @@ const boot = bootstrap.pairedBootstrap(evidence, {
   beta: 1,
   eta: 0.8,
   risk: 0.3,
-  weights: { pixel: 60, thin: 15, structure: 25 },
+  weights: { pixel: 50, thin: 15, structure: 20, resource: 15 },
+  resourceScores: Object.fromEntries(["DCP_1024","FR-UNet","FSG-Net","GAVE","SA-UNetv2"].map((m)=>[m,{score:0.5,completeness:0,status:"test"}])),
   strictMode: true,
 }, 20, 123);
 assert.strictEqual(boot.length, 5);
 assert.ok(Math.abs(boot.reduce((sum, item) => sum + item.top1Frequency, 0) - 1) < 1e-9);
+
+
+// Four active weights normalize to 100% and resource preference affects ranking.
+const nw = scoring.normalizeWeights({ pixel: 50, thin: 15, structure: 20, resource: 15 });
+assert.ok(Math.abs(nw.pixel + nw.thin + nw.structure + nw.resource - 1) < 1e-12);
+const resourceTrial = scoring.scoreModels([row("cheap", "D1", "a", 0.7, 0.7), row("costly", "D1", "a", 0.7, 0.7)], {
+  beta: 1, eta: 0.8, risk: 0, weights: { pixel: 0, thin: 0, structure: 0, resource: 100 }, strictMode: true,
+  resourceScores: { cheap: { score: 0.9, completeness: 1, status: "measured" }, costly: { score: 0.3, completeness: 1, status: "measured" } },
+}).rows;
+assert.strictEqual(resourceTrial[0].model, "cheap");
 
 console.log("scoring tests passed");
