@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Task-conditioned retinal vessel segmentation model ranking from bundled benchmark CSV evidence.">
+  <title>Retinal Vessel Segmentation Model Ranking</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div>
+        <p class="eyebrow">Evidence-guided model selection</p>
+        <h1>Retinal vessel segmentation model ranking</h1>
+        <p class="hero-copy">Select the downstream priority. The page automatically evaluates the bundled benchmark evidence and returns a transparent score, ranking, and trade-off explanation. Visitors do not need to upload CSV files.</p>
+      </div>
+      <div class="hero-card">
+        <span>Data version</span>
+        <strong id="data-version">loading…</strong>
+        <small>All calculations run locally in the browser.</small>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <p id="loading-status" class="loading">Loading bundled benchmark evidence…</p>
+    <div id="fatal-error" class="notice danger" hidden></div>
+
+    <section class="panel data-panel">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Bundled evidence</p>
+          <h2>Benchmark data are loaded automatically</h2>
+        </div>
+        <div id="quality-status"></div>
+      </div>
+      <div id="data-overview" class="kpi-grid"></div>
+      <div id="data-role-summary" class="role-row"></div>
+      <p class="muted">Three image-level CSVs drive the performance score: pixel metrics, thin-vessel sensitivity, and centerline fidelity. Training-resource profiles provide the optional compute-efficiency dimension. Error CSVs explain residual failure patterns and are not double-counted.</p>
+      <div id="threshold-warning" class="notice warning" hidden></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Step 1</p>
+          <h2>Choose a task preset</h2>
+        </div>
+      </div>
+      <div class="preset-grid">
+        <button type="button" data-preset="balanced">Balanced multi-objective</button>
+        <button type="button" data-preset="overall">Pixel level comparison</button>
+        <button type="button" data-preset="lowfn">Low FN / thin vessels</button>
+        <button type="button" data-preset="structure">Structural fidelity</button>
+        <button type="button" data-preset="unknown">Unknown-domain robustness</button>
+        <button type="button" data-preset="resource">Low GPU / compute cost</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Step 2</p>
+          <h2>Adjust the decision rule</h2>
+        </div>
+      </div>
+      <p class="weight-rule"><strong>Task weights always sum to 100%.</strong> Moving one slider automatically rescales the other three. Cross-dataset robustness is selected separately and is not a fifth percentage.</p>
+      <div class="control-grid four-weights">
+        <label><span>Pixel performance <b id="pixel-value">50%</b></span><input id="pixel-weight" type="range" min="0" max="100" value="50"><small>Fβ from Precision and Sensitivity.</small></label>
+        <label><span>Thin-vessel retention <b id="thin-value">15%</b></span><input id="thin-weight" type="range" min="0" max="100" value="15"><small>TVS only.</small></label>
+        <label><span>Structural fidelity <b id="structure-value">20%</b></span><input id="structure-weight" type="range" min="0" max="100" value="20"><small>clDice primary; SF1 supportive.</small></label>
+        <label><span>GPU / compute efficiency <b id="resource-value">15%</b></span><input id="resource-weight" type="range" min="0" max="100" value="15"><small>Training-resource evidence; incomplete profiles use a neutral value and are labelled.</small></label>
+      </div>
+      <div class="control-grid decision-controls">
+        <label><span>FN–FP preference</span><select id="fnfp-preference"><option>Low FP</option><option selected>Balanced</option><option>Low FN</option><option>Very low FN</option></select><small>Controls β in Fβ. Low FP remains available as a manual formula option, but it is no longer a preset button.</small></label>
+        <label><span>Cross-dataset aggregation</span><select id="aggregation-mode"><option value="mean">Mean only</option><option value="balanced" selected>Balanced: 70% mean + 30% worst</option><option value="robust">Robust: 30% mean + 70% worst</option></select><small>This controls unknown-domain caution; it is not part of the 100% task weights.</small></label>
+      </div>
+      <p id="normalized-weights" class="normalized-note"></p>
+      <details class="advanced">
+        <summary>Advanced formula controls</summary>
+        <div class="advanced-grid">
+          <label>β for F<sub>β</sub><input id="beta" type="number" min="0.1" max="10" step="0.1" value="1"></label>
+          <label>η for clDice weight<input id="eta" type="number" min="0" max="1" step="0.05" value="0.8"></label>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel output-panel">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Step 3</p>
+          <h2>Task-conditioned ranking</h2>
+        </div>
+      </div>
+      <div id="recommendation" class="recommendation"></div>
+      <div id="metric-consistency" class="notice"></div>
+      <div id="score-chart"></div>
+      <div class="table-wrap">
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Model</th>
+              <th>Final score</th>
+              <th>Pixel</th>
+              <th>Thin</th>
+              <th>Structure</th>
+              <th>Resource</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-body"></tbody>
+        </table>
+      </div>
+      <div id="formula-text" class="formula-box"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Interpretation</p>
+          <h2>Model profiles and residual risks</h2>
+        </div>
+      </div>
+      <div class="section-formula"><strong>Profile formulas:</strong> Mean metric = average of six dataset-level means; Worst metric = minimum dataset-level mean; Error share = category error pixels / all structural-error pixels.</div>
+      <div id="model-cards" class="model-cards"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Static GitHub Pages implementation. Bundled CSV files remain local to the site; no user upload is required.</p>
+  </footer>
+
+  <script src="src/csv.js"></script>
+  <script src="src/scoring.js"></script>
+  <script src="src/charts.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

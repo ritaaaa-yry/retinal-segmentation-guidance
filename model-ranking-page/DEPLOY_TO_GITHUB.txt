@@ -1,0 +1,120 @@
+将此网页覆盖到 GitHub 的方法
+============================
+
+ZIP 解压后应得到：
+
+E:\能成功吗\zhen\outputs\model-ranking-page
+
+目标仓库目录：
+
+E:\能成功吗\zhen\outputs\retinal-segmentation-guidance\model-ranking-page
+
+一、检查新版文件
+----------------
+
+PowerShell：
+
+Test-Path 'E:\能成功吗\zhen\outputs\model-ranking-page\index.html'
+Test-Path 'E:\能成功吗\zhen\outputs\model-ranking-page\data\built\resource_profiles.csv'
+
+两项都应返回 True。
+
+二、进入本地 Git 仓库
+--------------------
+
+Set-Location 'E:\能成功吗\zhen\outputs\retinal-segmentation-guidance'
+
+git status
+git switch main
+
+如果 git pull 因网络连接 GitHub 失败，但 git status 显示 main 与 origin/main 同步、working tree clean，可以先继续本地替换和提交，网络恢复后再 push。
+
+三、创建修改分支
+----------------
+
+git switch -c simplify-ranking-page
+
+如果提示分支已经存在：
+
+git switch simplify-ranking-page
+
+四、用新版完整覆盖旧目录
+------------------------
+
+Remove-Item -Recurse -Force '.\model-ranking-page'
+
+Copy-Item `
+  -Path 'E:\能成功吗\zhen\outputs\model-ranking-page' `
+  -Destination '.\model-ranking-page' `
+  -Recurse `
+  -Force
+
+五、检查目录层级
+----------------
+
+Test-Path '.\model-ranking-page\index.html'
+Test-Path '.\model-ranking-page\src\app.js'
+Test-Path '.\model-ranking-page\data\built\resource_profiles.csv'
+Test-Path '.\model-ranking-page\model-ranking-page\index.html'
+
+正确结果：
+
+True
+True
+True
+False
+
+六、运行测试
+------------
+
+node '.\model-ranking-page\tests\scoring.test.js'
+node --check '.\model-ranking-page\src\app.js'
+
+预期：
+
+scoring tests passed
+
+七、本地预览
+------------
+
+python -m http.server 8000
+
+浏览器打开：
+
+http://localhost:8000/model-ranking-page/
+
+确认：
+
+1. Overall quality 已改为 Pixel level comparison。
+2. Low FP preset 按钮已删除。
+3. 页面只保留 Bundled evidence、Step 1、Step 2、Step 3、Model profiles。
+4. 四项任务权重始终合计 100%。
+5. 页面仍可正常计算排名和模型卡片。
+
+完成后按 Ctrl+C 停止本地服务器。
+
+八、提交并推送
+--------------
+
+git status --short
+git add --all model-ranking-page
+git commit -m "Simplify ranking page sections and presets"
+git push -u origin simplify-ranking-page
+
+网络仍无法连接 GitHub 时，commit 可以先保留在本地，网络恢复后只需重新执行最后一条 push。
+
+九、在 GitHub 合并
+-----------------
+
+进入仓库后：
+
+Compare & pull request
+→ Create pull request
+→ Merge pull request
+→ Confirm merge
+
+GitHub Pages 地址保持不变：
+
+https://ritaaaa-yry.github.io/retinal-segmentation-guidance/model-ranking-page/
+
+合并后等待 1–5 分钟，并使用 Ctrl+F5 强制刷新。
