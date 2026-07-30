@@ -76,7 +76,7 @@ utility_j(model) = min observed cost_j / model cost_j
 Resource = mean(metric utilities)
 ```
 
-Missing resource fields receive neutral utility `0.50`. This is training-resource evidence from different frameworks and input sizes, not an identical-hardware deployment benchmark.
+Missing resource fields receive neutral utility `0.50`. SA-UNetv2's locally recorded 1028 × 1028 FIVES run contributes its measured 260,521 parameters, 13.182 GB peak allocated GPU memory, and 1,010.708 s total training time (75 logged epochs; 150 configured); its FLOPs and checkpoint-size fields remain unavailable and therefore neutral. This is training-resource evidence from different frameworks and input sizes, not an identical-hardware deployment benchmark.
 
 ### Cross-dataset aggregation
 
