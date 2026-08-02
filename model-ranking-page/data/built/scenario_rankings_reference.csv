@@ -1,0 +1,31 @@
+﻿scenario,rank,model,decision_score,gap_to_next
+Balanced multi-objective,1,SA-UNetv2,75.8218354238,9.0639763127
+Balanced multi-objective,2,FSG-Net,66.7578591111,1.73426921258
+Balanced multi-objective,3,DCP-1024,65.0235898985,0.792884622257
+Balanced multi-objective,4,GAVE,64.2307052762,3.46019195795
+Balanced multi-objective,5,FR-UNet,60.7705133183,
+Pixel-level mean,1,FSG-Net,77.0925836511,0.694273680533
+Pixel-level mean,2,DCP-1024,76.3983099706,0.0668228290472
+Pixel-level mean,3,SA-UNetv2,76.3314871415,3.34103146352
+Pixel-level mean,4,GAVE,72.990455678,0.123947528492
+Pixel-level mean,5,FR-UNet,72.8665081495,
+Low FN / thin vessels,1,SA-UNetv2,68.0139148313,1.02480143212
+Low FN / thin vessels,2,FSG-Net,66.9891133992,7.69935432667
+Low FN / thin vessels,3,DCP-1024,59.2897590725,0.741587602008
+Low FN / thin vessels,4,GAVE,58.5481714705,2.51858087161
+Low FN / thin vessels,5,FR-UNet,56.0295905989,
+Structural fidelity,1,FSG-Net,79.4579829779,0.612502087455
+Structural fidelity,2,SA-UNetv2,78.8454808904,2.54547135223
+Structural fidelity,3,DCP-1024,76.3000095382,3.29221333807
+Structural fidelity,4,GAVE,73.0077962001,1.92989612269
+Structural fidelity,5,FR-UNet,71.0779000775,
+Unknown-domain robustness,1,SA-UNetv2,71.9526919012,0.146509470362
+Unknown-domain robustness,2,FSG-Net,71.8061824308,3.79752985853
+Unknown-domain robustness,3,FR-UNet,68.0086525723,0.583060297464
+Unknown-domain robustness,4,DCP-1024,67.4255922748,0.303220767181
+Unknown-domain robustness,5,GAVE,67.1223715076,
+Resource-oriented,1,SA-UNetv2,86.9368628365,30.7941940979
+Resource-oriented,2,GAVE,56.1426687386,4.96654421311
+Resource-oriented,3,DCP-1024,51.1761245255,6.77779010657
+Resource-oriented,4,FSG-Net,44.398334419,0.280029261103
+Resource-oriented,5,FR-UNet,44.1183051579,

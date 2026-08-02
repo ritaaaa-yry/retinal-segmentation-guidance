@@ -2,7 +2,7 @@
   "use strict";
 
   const EPSILON = 1e-12;
-  const RESOURCE_FIELDS = ["parameters_m", "gflops", "checkpoint_mb", "peak_allocated_vram_gb", "total_training_time_s"];
+  const RESOURCE_FIELDS = ["parameters_m", "gflops", "checkpoint_mb", "peak_allocated_vram_gb", "total_training_time_s", "median_epoch_time_s"];
 
   function finite(value) { return Number.isFinite(value); }
   function mean(values) {

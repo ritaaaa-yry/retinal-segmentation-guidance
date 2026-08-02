@@ -1,0 +1,21 @@
+﻿exclusion_ratio,setting,rank,model,equal_dataset_macro_F1,gap_to_next,near_tie_with_next,ranking_changed_from_full
+0,Full region,1,FSG-Net,0.770925836511,0.00694273680533,False,False
+0,Full region,2,DCP-1024,0.763983099706,0.000668228290472,True,False
+0,Full region,3,SA-UNetv2,0.763314871415,0.0334103146352,False,False
+0,Full region,4,GAVE,0.72990455678,0.00123947528492,True,False
+0,Full region,5,FR-UNet,0.728665081495,,False,False
+0.1,Exclude 10% boundary band,1,FSG-Net,0.782799473605,0.00534540198924,False,False
+0.1,Exclude 10% boundary band,2,DCP-1024,0.777454071615,0.00349931951116,True,False
+0.1,Exclude 10% boundary band,3,SA-UNetv2,0.773954752104,0.0339588735953,False,False
+0.1,Exclude 10% boundary band,4,GAVE,0.739995878509,0.000218949004379,True,False
+0.1,Exclude 10% boundary band,5,FR-UNet,0.739776929504,,False,False
+0.2,Exclude 20% boundary band,1,DCP-1024,0.803843995872,0.000758010007722,True,True
+0.2,Exclude 20% boundary band,2,FSG-Net,0.803085985864,0.0133291361654,False,True
+0.2,Exclude 20% boundary band,3,SA-UNetv2,0.789756849699,0.0285536659044,False,True
+0.2,Exclude 20% boundary band,4,FR-UNet,0.761203183794,0.00345518980945,True,True
+0.2,Exclude 20% boundary band,5,GAVE,0.757747993985,,False,True
+0.4,Exclude 40% boundary band,1,DCP-1024,0.764053928082,0.0257884203249,False,True
+0.4,Exclude 40% boundary band,2,FSG-Net,0.738265507758,0.0360327160202,False,True
+0.4,Exclude 40% boundary band,3,SA-UNetv2,0.702232791737,0.00284482402082,True,True
+0.4,Exclude 40% boundary band,4,FR-UNet,0.699387967716,0.0184987253293,False,True
+0.4,Exclude 40% boundary band,5,GAVE,0.680889242387,,False,True

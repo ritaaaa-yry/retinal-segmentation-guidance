@@ -1,6 +1,6 @@
 {
-  "title": "Bundled retinal-vessel model-ranking evidence",
-  "version": "2026-07-27",
+  "title": "Retinal-vessel ranking evidence from the 2026-08-02 refresh",
+  "version": "2026-08-02",
   "score_data": "built/ranking_evidence_perimage.csv",
   "model_dataset_summary": "built/model_dataset_summary.csv",
   "model_summary": "built/model_summary.csv",
@@ -9,188 +9,181 @@
   "quality_report": "built/data_quality.json",
   "source_counts": {
     "scoring": 3,
-    "risk_context": 4,
-    "validation": 13,
-    "total": 20
+    "validation": 5,
+    "risk_context": 1,
+    "context": 4,
+    "sensitivity": 1,
+    "upper_bound": 4,
+    "total": 18
   },
   "sources": [
     {
-      "id": "pixel_perimage",
-      "file": "source/009__perimage(1).csv",
+      "id": "compute",
+      "file": "source/compute/resource_profiles.csv",
       "role": "scoring",
-      "rationale": "Image-level pixel metrics used to compute F_beta and consistency summaries.",
-      "rows": 1220,
-      "sha256": "6ee7126349bedc55acdac4717a34c005da66b4148ebbf3915ff22ac56f4d2827"
-    },
-    {
-      "id": "pixel_dataset_summary",
-      "file": "source/009__source_metrics(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 30,
-      "sha256": "3f6c487d54736209efb16319f45585c36b1d35e61fb785370a45b610348920ee"
-    },
-    {
-      "id": "error_model_dataset",
-      "file": "source/009__source_error_classes(1).csv",
-      "role": "risk_context",
-      "rationale": "Model-dataset error counts used to explain residual failure profiles; not added to the score.",
-      "rows": 30,
-      "sha256": "0f8771aa85f83001e50d91b8f4f8c5040ed310de880f1c3ccb2e06c21e8cb6a5"
-    },
-    {
-      "id": "task_reference",
-      "file": "source/010__source(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
+      "rationale": "Six-field training-resource profile used by the optional resource score.",
       "rows": 5,
-      "sha256": "103d3da2dc0169949ec1a5b8e6dbb5e170f748f6a30eb1780a96ad984fd8eafe"
+      "sha256": "4ae5bd7793851d71c2852c69680d0125bd2a245138e312052f5ccc256fb3c998"
     },
     {
-      "id": "model_centered_f1",
-      "file": "source/011__source(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 30,
-      "sha256": "d0499581bd14b070fe0e9ca70fb914a3a914ffea7729f14c2bfdff2f07a9619d"
-    },
-    {
-      "id": "pixel_distribution_summary",
-      "file": "source/011_012__source_metrics(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 30,
-      "sha256": "8239b54c2da630b98d5aa6882bc8191d1483f241a421fb9fc655e4e3942d71f3"
-    },
-    {
-      "id": "pixel_model_summary",
-      "file": "source/012__source(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 5,
-      "sha256": "45f2f311ea54ac190b113ab7bfa6d911adb3cca0ba4caeeb5ce640c631471de7"
-    },
-    {
-      "id": "thin_dataset_summary",
-      "file": "source/013__source(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 30,
-      "sha256": "7be00890650f54af56366bdfa367fb25bbbe9b65d409c534c0907576c5a09188"
-    },
-    {
-      "id": "thin_perimage",
-      "file": "source/013__source_thin_vessel_perimage(1).csv",
+      "id": "per_image",
+      "file": "source/chapter4/per_image_scoring_inputs.csv",
       "role": "scoring",
-      "rationale": "Image-level TVS used as the thin-vessel utility.",
+      "rationale": "Compact Chapter 4 image-level F1/F2, TVS, and structural scoring inputs.",
       "rows": 1220,
-      "sha256": "bf2ce0ab388b97b29ecbb7b8e8f5b1ea5053505aafef3407fac205a2601cc84f"
+      "sha256": "aa865b731161453f096eaceafacb3b2747b0513b8de67883a74f109b1dd0f440"
     },
     {
-      "id": "structure_dataset_duplicate_a",
-      "file": "source/02_per_dataset_macro_cldice_skeleton_fidelity(2).csv",
+      "id": "scenario_weights",
+      "file": "source/chapter4/scenario_weights.csv",
       "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
+      "rationale": "Reference result retained for audit and consistency checks.",
+      "rows": 6,
+      "sha256": "aba29f1a0a735e48b2a91d22213b319813abc91f781cd3746e9f0bad949149c5"
+    },
+    {
+      "id": "scenario_rankings",
+      "file": "source/chapter4/scenario_rankings.csv",
+      "role": "validation",
+      "rationale": "Reference result retained for audit and consistency checks.",
       "rows": 30,
-      "sha256": "fc9dad65b0fed10d8185ceafc850ab3d4f04b2708d4fd4a8a28e009d83399051"
+      "sha256": "d726d47b04af930c89dc336d1c8ca5cfdea6cf582e01e5f6d1c7b31ab520a60e"
     },
     {
-      "id": "structure_figure_source",
-      "file": "source/015__figure_source(2).csv",
+      "id": "pixel_summary",
+      "file": "source/chapter4/pixel_model_summary.csv",
       "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
+      "rationale": "Reference result retained for audit and consistency checks.",
+      "rows": 5,
+      "sha256": "d7a92d5bc506b1440e5e729bf64aa7c5fe9b09af3350c4b6f89d87575ced3817"
+    },
+    {
+      "id": "pixel_robustness",
+      "file": "source/chapter4/pixel_robustness.csv",
+      "role": "validation",
+      "rationale": "Reference result retained for audit and consistency checks.",
+      "rows": 5,
+      "sha256": "514f256b0cf6944df4197b7b3bd00dfaae5df11f0c72e0e0caaea25573292f6b"
+    },
+    {
+      "id": "thin_summary",
+      "file": "source/chapter4/thin_model_dataset_summary.csv",
+      "role": "validation",
+      "rationale": "Reference result retained for audit and consistency checks.",
       "rows": 30,
-      "sha256": "c291bc04fbc37cf73652733a6e411bb2864242cbc7e01336898f4a1e34c7cec3"
+      "sha256": "cd0f37e39b6f8226b61580b099e5ddf70761408d4a6db1db82ff46d3823496c7"
     },
     {
-      "id": "structure_dataset_duplicate_b",
-      "file": "source/015__source(2).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 30,
-      "sha256": "c291bc04fbc37cf73652733a6e411bb2864242cbc7e01336898f4a1e34c7cec3"
-    },
-    {
-      "id": "structure_perimage_legacy",
-      "file": "source/015__source_centerline_perimage(2).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 1220,
-      "sha256": "9319de6c06de3a099ab3bed4cd5303d8f7a94aaa45801c941af9cc28925f2625"
-    },
-    {
-      "id": "structure_perimage",
-      "file": "source/017__source_centerline_perimage_cldice_sf1(1).csv",
+      "id": "centerline_summary",
+      "file": "source/chapter4/centerline_model_dataset_summary.csv",
       "role": "scoring",
-      "rationale": "Image-level clDice and SF1 used as the structure utility.",
-      "rows": 1220,
-      "sha256": "65a8ebbd312405b98af46d1432c9861f9f8ce29b93f62ac6a9376bec47ab0168"
-    },
-    {
-      "id": "mask_inventory",
-      "file": "source/017__source_latest_mask_inventory(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
+      "rationale": "Chapter 4 model-dataset clDice and Skeleton F1 macros.",
       "rows": 30,
-      "sha256": "6983ad0d4069b103f515047f36e2347ff218841e981f6483bd61856fae98cb11"
+      "sha256": "b91a7e81066e4ac7602d5768c37901f9f0170385b92e04760dbe1f44eefb4cac"
     },
     {
-      "id": "structure_model_summary",
-      "file": "source/017__source_model_summary_cldice_skeleton_fidelity(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
-      "rows": 5,
-      "sha256": "26a88732df3872bb71b2386e2a24161f36bdd75fe55e3028a2ae4bcd3614cffb"
-    },
-    {
-      "id": "structure_dataset_summary",
-      "file": "source/017__source_per_dataset_macro_cldice_skeleton_fidelity(1).csv",
-      "role": "validation",
-      "rationale": "Summary, inventory, recommendation-reference, or legacy duplicate used for provenance and consistency checks only.",
+      "id": "errors",
+      "file": "source/chapter4/error_model_dataset_counts.csv",
+      "role": "risk_context",
+      "rationale": "Chapter 4 residual structural-error composition.",
       "rows": 30,
-      "sha256": "fc9dad65b0fed10d8185ceafc850ab3d4f04b2708d4fd4a8a28e009d83399051"
+      "sha256": "f942cb51910b49138f050d180b6218013d2c505637879801fa77ef7aa58fe47d"
     },
     {
-      "id": "error_global",
-      "file": "source/018__source(2).csv",
-      "role": "risk_context",
-      "rationale": "Global error composition reference; not added to the score.",
-      "rows": 5,
-      "sha256": "a5b08f385abc0c07281b33f3d5de6e852dcfe3cae2925ecce2152c9d4e1d4642"
+      "id": "dataset_profiles",
+      "file": "source/chapter5/dataset_profiles.csv",
+      "role": "context",
+      "rationale": "Chapter 5 dataset morphology and availability profile.",
+      "rows": 6,
+      "sha256": "7985a4adad226bb796e7f5bc428ce598d7a3ced465f86da1eccc9dcc8e806333"
     },
     {
-      "id": "error_fn_reference",
-      "file": "source/019__Figure 8__source(2).csv",
-      "role": "risk_context",
-      "rationale": "FN-oriented figure source used for explanatory cross-checks; not added to the score.",
-      "rows": 15,
-      "sha256": "7d51e715cbcf43736b7825f089bbdac90553ea8db7ad095e9c63fec20497bc44"
+      "id": "dataset_variability",
+      "file": "source/chapter5/dataset_variability.csv",
+      "role": "context",
+      "rationale": "Chapter 5 cross-model dataset variability.",
+      "rows": 6,
+      "sha256": "4056b1aecf5a6ac9638be0de456c614583e75e2ae8ff49c61ebd049be3a87aa9"
     },
     {
-      "id": "error_fp_reference",
-      "file": "source/020__Figure 9__source(2).csv",
-      "role": "risk_context",
-      "rationale": "FP-oriented figure source used for explanatory cross-checks; not added to the score.",
-      "rows": 15,
-      "sha256": "c6c1efdd57465ea0d14da37cc1b39ad4e3c7969aa5b9178deee2354fabcbffc5"
+      "id": "dataset_thin",
+      "file": "source/chapter5/dataset_thin_summary.csv",
+      "role": "context",
+      "rationale": "Chapter 5 dataset-conditioned thin-vessel summary.",
+      "rows": 6,
+      "sha256": "75f4fb96038da483033bace2e2a1f490fb95c4c83fdeeb25ff94b28042b08a21"
+    },
+    {
+      "id": "dataset_centerline",
+      "file": "source/chapter5/dataset_centerline_summary.csv",
+      "role": "context",
+      "rationale": "Chapter 5 dataset-conditioned centerline summary.",
+      "rows": 6,
+      "sha256": "d035322419e07301ebc1f1a25844a113734845b49051821307db4cdc385c6209"
+    },
+    {
+      "id": "boundary_rankings",
+      "file": "source/chapter6/boundary_exclusion_rankings.csv",
+      "role": "sensitivity",
+      "rationale": "Chapter 6 boundary-exclusion ranking sensitivity.",
+      "rows": 20,
+      "sha256": "bdd9b7651aeeff880b0f35c39f99c5cdb79f72be7ea997428149fc95d0176ef3"
+    },
+    {
+      "id": "oracle_vote_aggregate",
+      "file": "source/chapter7/oracle_vote_aggregate.csv",
+      "role": "upper_bound",
+      "rationale": "Chapter 7 GT-informed oracle-vote aggregate.",
+      "rows": 1,
+      "sha256": "c4e5faa4cbf2be5be97df0bd95c51f971c1a83829fb33ddb38f4ac43a3f5d679"
+    },
+    {
+      "id": "oracle_vote_dataset",
+      "file": "source/chapter7/oracle_vote_dataset.csv",
+      "role": "upper_bound",
+      "rationale": "Chapter 7 GT-informed oracle-vote dataset results.",
+      "rows": 6,
+      "sha256": "5be8e7db2f93963fde6050fb83b06671deaa5dd48946b48615d8b55da1fcba9c"
+    },
+    {
+      "id": "laplacian_aggregate",
+      "file": "source/chapter7/laplacian_oracle_aggregate.csv",
+      "role": "upper_bound",
+      "rationale": "Chapter 7 GT-informed Laplacian-repair aggregate.",
+      "rows": 1,
+      "sha256": "117263adc901a4405f01c9f9d1db5aa078647fa183bbc7481b5cd1d1eaf3a08a"
+    },
+    {
+      "id": "laplacian_dataset",
+      "file": "source/chapter7/laplacian_oracle_dataset.csv",
+      "role": "upper_bound",
+      "rationale": "Chapter 7 GT-informed Laplacian-repair dataset results.",
+      "rows": 6,
+      "sha256": "3d6d4f7ebe5706ebe741fbf5e6b16f9010bc1f90bc21e1945ea5b1bfb818247e"
     }
   ],
   "model_aliases": {
-    "DCP_1024": "DCP_1024",
-    "FRUnet": "FR-UNet",
-    "FR-UNet": "FR-UNet",
-    "FSG-Net-HRF": "FSG-Net",
-    "FSG-Net": "FSG-Net",
-    "GAVE": "GAVE",
-    "SA-UNnetv2": "SA-UNetv2",
-    "SA-UNetv2": "SA-UNetv2"
+    "DCP-1024": "DCP_1024",
+    "DCP_1024": "DCP_1024"
+  },
+  "supplemental": {
+    "dataset_profiles": "built/dataset_profiles.csv",
+    "dataset_variability": "built/dataset_variability.csv",
+    "dataset_thin": "built/dataset_thin_summary.csv",
+    "dataset_centerline": "built/dataset_centerline_summary.csv",
+    "boundary_rankings": "built/boundary_exclusion_rankings.csv",
+    "oracle_vote_aggregate": "built/oracle_vote_aggregate.csv",
+    "oracle_vote_dataset": "built/oracle_vote_dataset.csv",
+    "laplacian_aggregate": "built/laplacian_oracle_aggregate.csv",
+    "laplacian_dataset": "built/laplacian_oracle_dataset.csv",
+    "scenario_rankings": "built/scenario_rankings_reference.csv",
+    "scenario_weights": "built/scenario_weights_reference.csv"
   },
   "scoring_policy": {
-    "pixel": "Image-level F_beta from precision and sensitivity, averaged within dataset.",
-    "thin": "Image-level TVS, averaged within dataset.",
-    "structure": "eta * clDice + (1-eta) * SF1, averaged within dataset.",
+    "pixel": "F_beta from precision and sensitivity reconstructed exactly from Chapter 4 image-level F1 and F2.",
+    "thin": "Chapter 4 image-level TVS.",
+    "structure": "eta * Chapter 4 model-dataset macro clDice + (1-eta) * macro Skeleton F1.",
     "risk_adjustment": "(1-r) * equal-dataset mean + r * worst dataset.",
-    "final": "100 * weighted average of active utilities; no model-relative min-max normalization.",
-    "error_profiles": "Displayed as diagnostic context only and never added to the score."
+    "resource": "Mean of six minimum-cost ratios; missing field utility is 0.50."
   }
 }

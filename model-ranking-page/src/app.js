@@ -7,6 +7,15 @@
     errorProfiles: [],
     resourceProfiles: [],
     resourceScores: {},
+    datasetProfiles: [],
+    datasetVariability: [],
+    datasetThin: [],
+    datasetCenterline: [],
+    boundaryRankings: [],
+    oracleVoteAggregate: [],
+    oracleVoteDataset: [],
+    laplacianAggregate: [],
+    laplacianDataset: [],
     manifest: null,
     quality: null,
     scored: null,
@@ -88,6 +97,22 @@
         RankingCsv.fetchCsv(`data/${manifest.error_model_summary}`, RankingCsv.typedGenericRow),
         RankingCsv.fetchCsv("data/built/resource_profiles.csv", RankingCsv.typedGenericRow),
       ]);
+      const supplemental = manifest.supplemental || {};
+      const [
+        datasetProfiles, datasetVariability, datasetThin, datasetCenterline,
+        boundaryRankings, oracleVoteAggregate, oracleVoteDataset,
+        laplacianAggregate, laplacianDataset,
+      ] = await Promise.all([
+        RankingCsv.fetchCsv(`data/${supplemental.dataset_profiles}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.dataset_variability}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.dataset_thin}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.dataset_centerline}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.boundary_rankings}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.oracle_vote_aggregate}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.oracle_vote_dataset}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.laplacian_aggregate}`, RankingCsv.typedGenericRow),
+        RankingCsv.fetchCsv(`data/${supplemental.laplacian_dataset}`, RankingCsv.typedGenericRow),
+      ]);
 
       state.manifest = manifest;
       state.quality = quality;
@@ -96,9 +121,19 @@
       state.errorProfiles = errorProfiles;
       state.resourceProfiles = resourceProfiles;
       state.resourceScores = RankingScoring.computeResourceScores(resourceProfiles, 0.5);
+      state.datasetProfiles = datasetProfiles;
+      state.datasetVariability = datasetVariability;
+      state.datasetThin = datasetThin;
+      state.datasetCenterline = datasetCenterline;
+      state.boundaryRankings = boundaryRankings;
+      state.oracleVoteAggregate = oracleVoteAggregate;
+      state.oracleVoteDataset = oracleVoteDataset;
+      state.laplacianAggregate = laplacianAggregate;
+      state.laplacianDataset = laplacianDataset;
 
       renderDataOverview();
       renderQualitySummary();
+      renderLatestEvidence();
       applyPreset("balanced");
       setLoading("");
     } catch (error) {
@@ -123,9 +158,10 @@
       <div class="kpi"><strong>${counts.total}</strong><span>bundled source CSVs</span></div>
     `;
     $("data-role-summary").innerHTML = `
-      <span class="role-pill scoring">${counts.scoring} scoring sources</span>
-      <span class="role-pill context">${counts.risk_context} risk-context sources</span>
-      <span class="role-pill validation">${counts.validation} validation/provenance sources</span>
+      <span class="role-pill scoring">${counts.scoring || 0} scoring sources</span>
+      <span class="role-pill context">${(counts.context || 0) + (counts.risk_context || 0)} dataset/risk-context sources</span>
+      <span class="role-pill validation">${(counts.sensitivity || 0) + (counts.upper_bound || 0)} sensitivity/upper-bound sources</span>
+      <span class="role-pill validation">${counts.validation || 0} audit-reference sources</span>
     `;
     $("data-version").textContent = state.manifest.version;
   }
@@ -252,7 +288,7 @@
 
   function renderMetricConsistency() {
     const leaders = state.scored.metricLeaders;
-    const message = `Mean F1 leader: ${leaders.f1?.model || "n/a"}; IoU leader: ${leaders.iou?.model || "n/a"}; MCC leader: ${leaders.mcc?.model || "n/a"}.`;
+    const message = `Mean F1 leader: ${leaders.f1?.model || "n/a"}; IoU leader: ${leaders.iou?.model || "n/a"}. MCC is retained only in the Chapter 4 model summary and is not reconstructed at image level.`;
     $("metric-consistency").className = state.scored.metricConsistency ? "notice success" : "notice warning";
     $("metric-consistency").innerHTML = `<strong>${state.scored.metricConsistency ? "Cross-metric consistency" : "Cross-metric inconsistency"}</strong><span>${escapeHtml(message)} IoU and MCC are checks, not counted again.</span>`;
   }
@@ -320,6 +356,98 @@
       container.appendChild(card);
       RankingCharts.errorComposition(card.querySelector(`#error-${index}`), errors);
     });
+  }
+
+  function rowByDataset(rows, dataset) {
+    return rows.find((row) => row.dataset === dataset) || {};
+  }
+
+  function renderLatestEvidence() {
+    renderResourceEvidence();
+    renderDatasetEvidence();
+    renderBoundaryEvidence();
+    renderOracleEvidence();
+  }
+
+  function renderResourceEvidence() {
+    $("resource-evidence-body").innerHTML = state.resourceProfiles.map((row) => {
+      const score = state.resourceScores[row.model];
+      return `
+        <tr>
+          <td><strong>${escapeHtml(row.model)}</strong></td>
+          <td class="numeric">${fmt(row.parameters_m, 3)}</td>
+          <td class="numeric">${fmt(row.gflops, 2)}</td>
+          <td class="numeric">${fmt(row.checkpoint_mb, 2)}</td>
+          <td class="numeric">${fmt(row.peak_allocated_vram_gb, 2)}</td>
+          <td class="numeric">${Number.isFinite(row.total_training_time_s) ? fmt(row.total_training_time_s / 60, 2) : "n/a"}</td>
+          <td class="numeric">${fmt(row.median_epoch_time_s, 2)}</td>
+          <td class="numeric"><strong>${fmt(score?.score, 3)}</strong></td>
+          <td>${escapeHtml(row.profile_status || "unavailable")}</td>
+        </tr>`;
+    }).join("");
+  }
+
+  function renderDatasetEvidence() {
+    $("dataset-evidence-body").innerHTML = state.datasetProfiles.map((profile) => {
+      const variability = rowByDataset(state.datasetVariability, profile.dataset);
+      const thin = rowByDataset(state.datasetThin, profile.dataset);
+      const centerline = rowByDataset(state.datasetCenterline, profile.dataset);
+      return `
+        <tr>
+          <td><strong>${escapeHtml(profile.dataset)}</strong></td>
+          <td class="numeric">${profile.n}</td>
+          <td>${escapeHtml(profile.image_mask_resolution)}</td>
+          <td class="numeric">${pct(profile.thin_skeleton_share, 2)}</td>
+          <td class="numeric">${pct(profile.vessel_occupancy_visible_fov, 2)}</td>
+          <td class="numeric">${fmt(variability.five_model_mean_macro_F1)}</td>
+          <td class="numeric">${fmt(variability.cross_model_macro_F1_sd)}</td>
+          <td class="numeric">${fmt(thin.mean_TVS)}</td>
+          <td class="numeric">${fmt(centerline.mean_clDice)}</td>
+          <td class="numeric">${fmt(centerline.mean_SF1)}</td>
+        </tr>`;
+    }).join("");
+  }
+
+  function renderBoundaryEvidence() {
+    const ratios = [...new Set(state.boundaryRankings.map((row) => row.exclusion_ratio))].sort((a, b) => a - b);
+    $("boundary-evidence-body").innerHTML = ratios.map((ratio) => {
+      const rows = state.boundaryRankings.filter((row) => row.exclusion_ratio === ratio).sort((a, b) => a.rank - b.rank);
+      const first = rows[0] || {};
+      const second = rows[1] || {};
+      return `
+        <tr>
+          <td>${escapeHtml(first.setting || String(ratio))}</td>
+          <td><strong>${escapeHtml(first.model || "n/a")}</strong></td>
+          <td class="numeric">${fmt(first.equal_dataset_macro_F1)}</td>
+          <td>${escapeHtml(second.model || "n/a")}</td>
+          <td class="numeric">${fmt(second.equal_dataset_macro_F1)}</td>
+          <td>${first.ranking_changed_from_full === true || String(first.ranking_changed_from_full).toLowerCase() === "true" ? "Yes" : "No"}</td>
+        </tr>`;
+    }).join("");
+  }
+
+  function renderOracleEvidence() {
+    const vote = state.oracleVoteAggregate[0] || {};
+    const laplacian = state.laplacianAggregate[0] || {};
+    $("oracle-summary").innerHTML = `
+      <article class="evidence-card"><span>Oracle vote ΔF1</span><strong>${fmt(vote.delta_F1)}</strong><small>${vote.images || 0} images; GT-informed upper bound</small></article>
+      <article class="evidence-card"><span>Oracle vote F1</span><strong>${fmt(vote.vote_F1)}</strong><small>Baseline per-image best: ${fmt(vote.best_F1)}</small></article>
+      <article class="evidence-card"><span>Laplacian repair ΔF1</span><strong>${fmt(laplacian.delta_F1)}</strong><small>${laplacian.images || 0} images; LES unavailable</small></article>
+      <article class="evidence-card"><span>Laplacian repaired F1</span><strong>${fmt(laplacian.repaired_F1)}</strong><small>Baseline: ${fmt(laplacian.baseline_F1)}</small></article>
+    `;
+    const datasets = [...new Set([...state.oracleVoteDataset, ...state.laplacianDataset].map((row) => row.dataset))];
+    $("oracle-evidence-body").innerHTML = datasets.map((dataset) => {
+      const voteRow = rowByDataset(state.oracleVoteDataset, dataset);
+      const lapRow = rowByDataset(state.laplacianDataset, dataset);
+      return `
+        <tr>
+          <td><strong>${escapeHtml(dataset)}</strong></td>
+          <td class="numeric">${fmt(voteRow.delta_F1)}</td>
+          <td class="numeric">${fmt(voteRow.vote_F1)}</td>
+          <td class="numeric">${fmt(lapRow.delta_F1)}</td>
+          <td>${escapeHtml(lapRow.status || "")}</td>
+        </tr>`;
+    }).join("");
   }
 
   function bindEvents() {

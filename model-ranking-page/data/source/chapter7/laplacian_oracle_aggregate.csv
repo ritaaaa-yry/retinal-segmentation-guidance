@@ -1,0 +1,2 @@
+﻿model,images,datasets_completed,baseline_F1,repaired_F1,delta_F1,baseline_IoU,repaired_IoU,delta_IoU,FN_recovered_fraction,FP_removed_fraction,total_error_change,status
+FSG-Net,222,5,0.73789733515,0.853024485941,0.115127150791,0.588067450556,0.745555105573,0.157487655017,0.432770736471,0.509793807544,-10954891,GT-informed oracle; LES unavailable because source images are absent

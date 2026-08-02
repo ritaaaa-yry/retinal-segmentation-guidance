@@ -1,0 +1,7 @@
+﻿dataset,n,image_mask_resolution,original_images_available,thin_skeleton_share,vessel_occupancy_full_canvas,vessel_occupancy_visible_fov,mean_thin_diameter_px,mean_thick_diameter_px,fov_note
+AFIO,99,1504x1000 (99),99,0.00865558133983,0.0801115946701,0.146806649065,2.42629657464,7.80442961784,non-dark original image support
+CHASEDB1,28,999x960 (28),28,0.305620399242,0.0693392052767,0.100397493522,2.18354751775,7.77065101162,non-dark original image support
+DualModal2019,30,1024x1024 (30),30,0.389970789901,0.0640904108683,0.0814185987351,2.17248243315,6.4771217359,non-dark original image support
+HRF,45,3504x2336 (45),45,0.501080158069,0.0771004316441,0.0912160554451,4.16418803672,13.3468134406,non-dark original image support
+LES,22,1620x1444 (21); 2196x1958 (1),0,0.253194759321,0.0668274875672,,4.12828938936,11.1650894356,unavailable: original images missing; visible-FOV occupancy not backfilled
+STARE,20,700x605 (20),20,0.219782231959,0.0760393152302,0.0801896353714,2,4.84404330409,non-dark original image support

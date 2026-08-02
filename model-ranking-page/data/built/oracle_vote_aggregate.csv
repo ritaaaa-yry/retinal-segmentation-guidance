@@ -1,0 +1,2 @@
+﻿scope,best_single_model,images,best_F1,vote_F1,delta_F1,best_IoU,vote_IoU,delta_IoU,total_error_change
+All datasets (244 images),Per-image best single (varies),244,0.757018742713,0.83274174441,0.0757230016971,0.612678732793,0.729488122825,0.116809390032,-10739064

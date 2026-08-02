@@ -117,10 +117,38 @@ assert.ok(Math.abs(boot.reduce((sum, item) => sum + item.top1Frequency, 0) - 1) 
 // Four active weights normalize to 100% and resource preference affects ranking.
 const nw = scoring.normalizeWeights({ pixel: 50, thin: 15, structure: 20, resource: 15 });
 assert.ok(Math.abs(nw.pixel + nw.thin + nw.structure + nw.resource - 1) < 1e-12);
+assert.deepStrictEqual(scoring.RESOURCE_FIELDS, [
+  "parameters_m", "gflops", "checkpoint_mb", "peak_allocated_vram_gb",
+  "total_training_time_s", "median_epoch_time_s",
+]);
+const profilesPath = path.join(__dirname, "..", "data", "built", "resource_profiles.csv");
+const profiles = csv.parseCsv(fs.readFileSync(profilesPath, "utf8")).map(csv.typedGenericRow);
+const measuredResources = scoring.computeResourceScores(profiles, 0.5);
+assert.strictEqual(measuredResources["SA-UNetv2"].completeness, 1);
+assert.ok(measuredResources["SA-UNetv2"].score > 0.9);
 const resourceTrial = scoring.scoreModels([row("cheap", "D1", "a", 0.7, 0.7), row("costly", "D1", "a", 0.7, 0.7)], {
   beta: 1, eta: 0.8, risk: 0, weights: { pixel: 0, thin: 0, structure: 0, resource: 100 }, strictMode: true,
   resourceScores: { cheap: { score: 0.9, completeness: 1, status: "measured" }, costly: { score: 0.3, completeness: 1, status: "measured" } },
 }).rows;
 assert.strictEqual(resourceTrial[0].model, "cheap");
+
+// The refreshed bundled evidence must reproduce the six Chapter 4 scenario leaders.
+const presetCases = [
+  ["SA-UNetv2", { beta: 1, risk: 0.3, weights: { pixel: 50, thin: 15, structure: 20, resource: 15 } }],
+  ["FSG-Net", { beta: 1, risk: 0, weights: { pixel: 100, thin: 0, structure: 0, resource: 0 } }],
+  ["SA-UNetv2", { beta: 2, risk: 0.3, weights: { pixel: 50, thin: 50, structure: 0, resource: 0 } }],
+  ["FSG-Net", { beta: 1, risk: 0.3, weights: { pixel: 0, thin: 0, structure: 100, resource: 0 } }],
+  ["SA-UNetv2", { beta: 1, risk: 0.7, weights: { pixel: 100, thin: 0, structure: 0, resource: 0 } }],
+  ["SA-UNetv2", { beta: 1, risk: 0.3, weights: { pixel: 30, thin: 0, structure: 0, resource: 70 } }],
+];
+presetCases.forEach(([expected, options]) => {
+  const result = scoring.scoreModels(evidence, {
+    ...options,
+    eta: 0.8,
+    resourceScores: measuredResources,
+    strictMode: true,
+  });
+  assert.strictEqual(result.rows[0].model, expected);
+});
 
 console.log("scoring tests passed");

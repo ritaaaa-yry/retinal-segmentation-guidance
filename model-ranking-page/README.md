@@ -10,16 +10,12 @@ Visitors do **not** upload CSV files. The site loads the built-in evidence autom
 2. Task presets and editable decision weights.
 3. Task-conditioned model ranking with transparent formulas.
 4. Model profiles and residual-error interpretation.
+5. Latest local computing-cost evidence.
+6. Chapter 5 dataset fingerprints.
+7. Chapter 6 boundary-exclusion sensitivity.
+8. Chapter 7 GT-informed oracle upper bounds.
 
-The following extended sections were intentionally removed from the visible page to keep it concise:
-
-- Top-candidate breakdown across six datasets.
-- Ranking stability.
-- GPU and training-resource profile table.
-- Data integrity and source roles.
-- What the score means—and what it does not mean.
-
-The underlying CSVs, resource profiles, build script, and scoring tests remain bundled for reproducibility.
+The ranking remains concise, while the latest Chapter 5-7 evidence is shown in compact tables. Every displayed value is bundled as CSV under `data/source/` and regenerated into `data/built/`.
 
 ## Task presets
 
@@ -69,14 +65,14 @@ Structure = eta * clDice + (1 - eta) * SF1
 
 ### Resource
 
-The provisional resource utility uses parameters, GFLOPs, checkpoint size, peak allocated VRAM, and total training time:
+The provisional resource utility uses parameters, GFLOPs, checkpoint size, peak allocated VRAM, total training time, and epoch time:
 
 ```text
 utility_j(model) = min observed cost_j / model cost_j
 Resource = mean(metric utilities)
 ```
 
-Missing resource fields receive neutral utility `0.50`. SA-UNetv2's locally recorded 1028 × 1028 FIVES run contributes its measured 260,521 parameters, 13.182 GB peak allocated GPU memory, and 1,010.708 s total training time (75 logged epochs; 150 configured); its FLOPs and checkpoint-size fields remain unavailable and therefore neutral. This is training-resource evidence from different frameworks and input sizes, not an identical-hardware deployment benchmark.
+Missing resource fields receive neutral utility `0.50`. SA-UNetv2's locally recorded 1028 × 1028 FIVES run now contributes 260,521 parameters, 78.179 GFLOPs, a 3.236 MiB checkpoint, 13.182 GB peak allocated GPU memory, 1,010.708 s total training time, and 13.450 s mean logged epoch time (75 completed epochs; 150 configured). This is heterogeneous training-resource evidence from different frameworks and input sizes, not an identical-hardware deployment benchmark.
 
 ### Cross-dataset aggregation
 
@@ -100,10 +96,11 @@ No model-relative min–max scaling is used.
 
 ## Bundled evidence
 
-- 20 source CSV files under `data/source/`.
-- 1,220 merged image-level records under `data/built/ranking_evidence_perimage.csv`.
-- Pixel, TVS, clDice/SF1, error-profile, validation, and provenance evidence.
-- `data/built/resource_profiles.csv` for the optional compute-efficiency dimension.
+- 18 source CSV files under `data/source/`.
+- 1,220 image-level records under `data/built/ranking_evidence_perimage.csv`.
+- Chapter 4 pixel, TVS, clDice/SF1, error-profile, and scenario evidence.
+- Chapter 5 dataset fingerprints, Chapter 6 boundary sensitivity, and Chapter 7 oracle upper bounds.
+- `data/built/resource_profiles.csv` generated from the local `training_monitor/outputs` evidence.
 
 ## Run locally
 
@@ -145,6 +142,8 @@ node model-ranking-page/tests/scoring.test.js
 
 3. Commit the regenerated `data/built/` outputs together with the source changes.
 
+The builder verifies the 1,220 image keys, reconstructs precision and sensitivity exactly from Chapter 4 image-level F1/F2, reconciles equal-dataset mean F1 to Table 4.3, and requires all 30 model-dataset combinations.
+
 ## Interpretation limit
 
-This page is a benchmark-relative decision aid based on six datasets. Labelled validation on the real target domain should override the displayed ranking.
+This page is a benchmark-relative decision aid based on six datasets. Labelled validation on the real target domain should override the displayed ranking. Oracle vote and Laplacian repair are GT-informed upper bounds and must not be described as deployable methods.

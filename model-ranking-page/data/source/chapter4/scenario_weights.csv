@@ -1,0 +1,7 @@
+﻿scenario,beta,w_pixel,w_thin,w_structure,w_resource,risk_r
+Balanced multi-objective,1,0.5,0.15,0.2,0.15,0.3
+Pixel-level mean,1,1,0,0,0,0
+Low FN / thin vessels,2,0.5,0.5,0,0,0.3
+Structural fidelity,1,0,0,1,0,0.3
+Unknown-domain robustness,1,1,0,0,0,0.7
+Resource-oriented,1,0.3,0,0,0.7,0.3
