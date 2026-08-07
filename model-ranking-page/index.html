@@ -38,7 +38,7 @@
       </div>
       <div id="data-overview" class="kpi-grid"></div>
       <div id="data-role-summary" class="role-row"></div>
-      <p class="muted">The score is rebuilt from the 2026-08-02 Chapter 4 image-level utilities and model-dataset summaries. Chapter 5 dataset fingerprints, Chapter 6 boundary sensitivity, Chapter 7 oracle upper bounds, and local training-monitor resource profiles are bundled below for context and audit.</p>
+      <p class="muted">The score is rebuilt from the 2026-08-02 Chapter 4 image-level utilities and model-dataset summaries. The complete evidence package remains bundled in the repository for reproducibility and audit, but is not rendered on this page.</p>
       <div id="threshold-warning" class="notice warning" hidden></div>
     </section>
 
@@ -127,59 +127,6 @@
       <div id="model-cards" class="model-cards"></div>
     </section>
 
-    <section class="panel">
-      <div class="section-heading">
-        <div><p class="section-kicker">Computing cost</p><h2>Latest local training-resource evidence</h2></div>
-      </div>
-      <div class="notice warning"><strong>Provisional cross-framework comparison</strong><span>Measurements come from different frameworks, input sizes, and precision modes. Missing fields receive neutral utility 0.50. These data describe local training cost, not identical-hardware inference speed.</span></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Model</th><th>Params (M)</th><th>GFLOPs</th><th>Checkpoint (MiB)</th><th>Peak VRAM (GB)</th><th>Training (min)</th><th>Epoch time (s)</th><th>Resource utility</th><th>Status</th></tr></thead>
-          <tbody id="resource-evidence-body"></tbody>
-        </table>
-      </div>
-      <p class="small muted">Resource utility averages six minimum-cost ratios: parameters, GFLOPs, checkpoint size, peak allocated VRAM, total training time, and epoch time.</p>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <div><p class="section-kicker">Chapter 5</p><h2>Dataset fingerprints and observed difficulty</h2></div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Dataset</th><th>Images</th><th>Mask resolution</th><th>Thin skeleton</th><th>Visible-FOV vessels</th><th>Five-model mean F1</th><th>Cross-model F1 SD</th><th>Mean TVS</th><th>Mean clDice</th><th>Mean SF1</th></tr></thead>
-          <tbody id="dataset-evidence-body"></tbody>
-        </table>
-      </div>
-      <p class="small muted">LES original images are unavailable, so visible-FOV occupancy remains unavailable rather than backfilled.</p>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <div><p class="section-kicker">Chapter 6</p><h2>Boundary-exclusion ranking sensitivity</h2></div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Evaluation setting</th><th>First</th><th>First F1</th><th>Second</th><th>Second F1</th><th>Changed from full</th></tr></thead>
-          <tbody id="boundary-evidence-body"></tbody>
-        </table>
-      </div>
-      <p class="small muted">This sensitivity analysis changes the evaluation region; it is not a replacement for the full-region benchmark.</p>
-    </section>
-
-    <section class="panel">
-      <div class="section-heading">
-        <div><p class="section-kicker">Chapter 7</p><h2>GT-informed oracle upper bounds</h2></div>
-      </div>
-      <div id="oracle-summary" class="evidence-grid"></div>
-      <div class="notice warning"><strong>Upper-bound evidence only</strong><span>Oracle vote and Laplacian repair use ground-truth information. They are not deployable GT-free post-processing methods.</span></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Dataset</th><th>Oracle vote ΔF1</th><th>Oracle vote F1</th><th>Laplacian ΔF1</th><th>Laplacian status</th></tr></thead>
-          <tbody id="oracle-evidence-body"></tbody>
-        </table>
-      </div>
-    </section>
   </main>
 
   <footer>

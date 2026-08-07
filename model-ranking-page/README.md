@@ -10,12 +10,7 @@ Visitors do **not** upload CSV files. The site loads the built-in evidence autom
 2. Task presets and editable decision weights.
 3. Task-conditioned model ranking with transparent formulas.
 4. Model profiles and residual-error interpretation.
-5. Latest local computing-cost evidence.
-6. Chapter 5 dataset fingerprints.
-7. Chapter 6 boundary-exclusion sensitivity.
-8. Chapter 7 GT-informed oracle upper bounds.
-
-The ranking remains concise, while the latest Chapter 5-7 evidence is shown in compact tables. Every displayed value is bundled as CSV under `data/source/` and regenerated into `data/built/`.
+The visible page intentionally stops after model profiles and residual-error interpretation. Supplemental Chapter 5–7 and training-resource evidence remain bundled for reproducibility and audit, but are not rendered as visible page sections.
 
 ## Task presets
 
@@ -65,14 +60,14 @@ Structure = eta * clDice + (1 - eta) * SF1
 
 ### Resource
 
-The provisional resource utility uses parameters, GFLOPs, checkpoint size, peak allocated VRAM, total training time, and epoch time:
+The provisional resource utility uses parameters, GFLOPs, checkpoint size, peak allocated VRAM, total training time, and mean epoch time:
 
 ```text
 utility_j(model) = min observed cost_j / model cost_j
 Resource = mean(metric utilities)
 ```
 
-Missing resource fields receive neutral utility `0.50`. SA-UNetv2's locally recorded 1028 × 1028 FIVES run now contributes 260,521 parameters, 78.179 GFLOPs, a 3.236 MiB checkpoint, 13.182 GB peak allocated GPU memory, 1,010.708 s total training time, and 13.450 s mean logged epoch time (75 completed epochs; 150 configured). This is heterogeneous training-resource evidence from different frameworks and input sizes, not an identical-hardware deployment benchmark.
+Missing resource fields receive neutral utility `0.50`. SA-UNetv2's locally recorded 1028 × 1028 FIVES run contributes 260,521 parameters, 78.179 aligned GFLOPs, a 3.236 MiB checkpoint, 13.182 GB peak allocated GPU memory, 1,010.708 s total training time, and 13.450 s mean logged epoch time (75 logged epochs; 150 configured). The aligned FLOPs value is kept separate from the TensorFlow graph profile; this remains heterogeneous training-resource evidence, not an identical-hardware deployment benchmark.
 
 ### Cross-dataset aggregation
 
@@ -97,10 +92,9 @@ No model-relative min–max scaling is used.
 ## Bundled evidence
 
 - 18 source CSV files under `data/source/`.
-- 1,220 image-level records under `data/built/ranking_evidence_perimage.csv`.
-- Chapter 4 pixel, TVS, clDice/SF1, error-profile, and scenario evidence.
-- Chapter 5 dataset fingerprints, Chapter 6 boundary sensitivity, and Chapter 7 oracle upper bounds.
-- `data/built/resource_profiles.csv` generated from the local `training_monitor/outputs` evidence.
+- 1,220 merged image-level records under `data/built/ranking_evidence_perimage.csv`.
+- Chapter 4 scoring, Chapter 5 dataset context, Chapter 6 boundary sensitivity, and Chapter 7 upper-bound evidence.
+- `data/built/resource_profiles.csv` for the optional compute-efficiency dimension.
 
 ## Run locally
 
